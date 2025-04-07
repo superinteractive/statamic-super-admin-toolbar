@@ -1,0 +1,31 @@
+{
+  "name": "superinteractive/statamic-super-admin-toolbar",
+  "version": "1.0.0",
+  "autoload": {
+    "psr-4": {
+      "SuperInteractive\\SuperAdminToolbar\\": "src"
+    }
+  },
+  "require": {
+    "statamic/cms": "^5.0",
+    "ext-dom": "*",
+    "ext-libxml": "*"
+  },
+  "extra": {
+    "statamic": {
+      "name": "Super Admin Toolbar",
+      "description": "Super Admin Toolbar for Statamic 5."
+    },
+    "laravel": {
+      "providers": [
+        "SuperInteractive\\SuperAdminToolbar\\ServiceProvider"
+      ]
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "pixelfear/composer-dist-plugin": true
+    }
+  },
+  "license": "MIT"
+}

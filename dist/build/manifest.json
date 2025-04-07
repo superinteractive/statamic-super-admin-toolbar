@@ -1,0 +1,19 @@
+{
+  "resources/css/toolbar.css": {
+    "file": "assets/toolbar-BNeuQAZm.css",
+    "src": "resources/css/toolbar.css",
+    "isEntry": true
+  },
+  "resources/js/load-toolbar.js": {
+    "file": "assets/load-toolbar-BXWVb5sZ.js",
+    "name": "load-toolbar",
+    "src": "resources/js/load-toolbar.js",
+    "isEntry": true
+  },
+  "resources/js/toolbar.js": {
+    "file": "assets/toolbar-PwXFMNCp.js",
+    "name": "toolbar",
+    "src": "resources/js/toolbar.js",
+    "isEntry": true
+  }
+}
