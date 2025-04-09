@@ -11,7 +11,8 @@ class ServiceProvider extends AddonServiceProvider
     protected $vite = [
         'input' => [
         ],
-        'publicDirectory' => 'dist',
+        'publicDirectory' => 'resources/dist',
+        'hotFile' => __DIR__.'/../resources/dist/hot',
     ];
 
     protected $routes = [

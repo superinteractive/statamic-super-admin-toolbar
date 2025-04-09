@@ -1,6 +1,5 @@
 {
   "name": "superinteractive/statamic-super-admin-toolbar",
-  "version": "1.0.1",
   "autoload": {
     "psr-4": {
       "SuperInteractive\\SuperAdminToolbar\\": "src"

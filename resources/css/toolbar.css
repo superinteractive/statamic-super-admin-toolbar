@@ -1,4 +1,7 @@
-@tailwind base;
+.super-admin-toolbar {
+    @tailwind base;
+}
+
 @tailwind components;
 @tailwind utilities;
 

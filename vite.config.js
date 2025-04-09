@@ -9,7 +9,9 @@ export default defineConfig({
                 'resources/js/toolbar.js',
                 'resources/css/toolbar.css',
             ],
-            publicDirectory: 'dist',
+            refresh: true,
+            publicDirectory: 'resources/dist',
+            hotFile: 'resources/dist/hot',
         }),
     ],
 });
