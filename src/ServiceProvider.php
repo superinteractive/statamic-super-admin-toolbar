@@ -22,8 +22,15 @@ class ServiceProvider extends AddonServiceProvider
     {
         parent::bootAddon();
 
+        // Register view prefix
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'super-admin-toolbar');
 
+        // SVG Icon Component
         Blade::component(Icon::class, 'sat-icon');
+
+        // Register @superAdminToolbar blade tag
+        Blade::directive('superAdminToolbar', function () {
+            return "<?php echo view('super-admin-toolbar::load-toolbar')->render(); ?>";
+        });
     }
 }

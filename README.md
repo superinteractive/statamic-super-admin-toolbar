@@ -21,13 +21,25 @@ An admin toolbar for Statamic 5 that streamlines content management for editors 
 
 ## Installation
 
-Require it via Composer:
+Require the addon via Composer:
 
 ```bash
 composer require superinteractive/statamic-super-admin-toolbar
 ```
 
-To ensure the Super Admin Toolbar is injected where you need it, add the following to your layout file **before** the closing `</head>` tag:
+Ensure your layout contains the CSRF token [meta tag](https://laravel.com/docs/12.x/csrf#csrf-x-csrf-token):
+
+### Antlers:
+```html
+<meta name="csrf-token" content="{{ csrf_token }}">
+```
+
+### Blade:
+```html
+<meta name="csrf-token" content="{{ csrf_token() }}">
+```
+
+Finally, include the toolbar in your layout file — ideally **before** the closing `</head>` tag:
 
 #### Antlers:
 
@@ -38,12 +50,12 @@ To ensure the Super Admin Toolbar is injected where you need it, add the followi
 #### Blade:
 
 ```blade
-<s:super_admin_toolbar />
+@superAdminToolbar
 ```
 
 ## Usage
 
-Once installed, the Super Admin Toolbar automatically loads for users with the `access cp` permission. By default, the toolbar is lazy-loaded using JavaScript, ensuring compatibility with static caching.
+Once installed, the Super Admin Toolbar automatically loads for users with the `access cp` permission. The toolbar is lazy-loaded using JavaScript, ensuring compatibility with Statamic's full and half measure static caching.
 
 ## Support
 
