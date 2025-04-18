@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Statamic\Contracts\Auth\User as UserContract;
-use Statamic\Facades\User;
 use Statamic\Http\Controllers\Controller;
 use SuperInteractive\SuperAdminToolbar\Services\ManifestService;
 use SuperInteractive\SuperAdminToolbar\Services\ToolbarContextService;
@@ -23,7 +22,7 @@ final class SuperAdminToolbarController extends Controller
 
     public function __invoke(Request $request, ToolbarContextService $contextService, ManifestService $manifestService): JsonResponse
     {
-        $user = User::current();
+        $user = auth(config('statamic.users.guards.cp', 'web'))->user();
 
         if (!$this->isUserAuthorized($user)) {
             return response()->json(['authenticated' => false]);
