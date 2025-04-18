@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace SuperInteractive\SuperAdminToolbar\Services;
 
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Statamic\Contracts\Auth\User as UserContract;
 use Statamic\Contracts\Entries\Entry as EntryContract;
 use Statamic\Contracts\Taxonomies\Term as TermContract;
 use Statamic\Facades\Addon;
@@ -22,7 +21,7 @@ use Throwable;
 
 final class ToolbarContextService
 {
-    public function buildContextData(string $url, UserContract $user): array
+    public function buildContextData(string $url, Authorizable $user): array
     {
         $context = [
             'editUrl' => null,
@@ -37,7 +36,7 @@ final class ToolbarContextService
 
         $site = $this->findSiteForUrl($url);
 
-        if (! $site) {
+        if (!$site) {
             return $context;
         }
 
@@ -46,13 +45,12 @@ final class ToolbarContextService
 
         $processedUrl = $this->processUrl($url);
 
-        if (! $processedUrl) {
+        if (!$processedUrl) {
             return $context;
         }
 
         $model = $this->findContextualModel($processedUrl['uri'], $processedUrl['absolute'], $site);
         $context['currentModel'] = $model;
-
         $context['itemSingularName'] = $this->getItemSingularName($model);
         $context['editUrl'] = $this->generateEditUrl($model, $user);
         $context['createUrl'] = $this->generateCreateUrl($model, $user);
@@ -91,13 +89,13 @@ final class ToolbarContextService
             $absoluteUrl = rtrim(StatamicURL::makeAbsolute($url), '/');
 
             $matchedSite = SiteAPI::all()
-                ->sortByDesc(fn ($site) => strlen(rtrim($site->absoluteUrl(), '/')))
+                ->sortByDesc(fn($site) => strlen(rtrim($site->absoluteUrl(), '/')))
                 ->first(function (ConcreteSite $site) use ($absoluteUrl) {
                     $siteUrl = rtrim($site->absoluteUrl(), '/');
                     return Str::startsWith($absoluteUrl, $siteUrl);
                 });
 
-            if (! $matchedSite) {
+            if (!$matchedSite) {
                 Log::warning('ToolbarContextService: Could not determine site for URL.', ['url' => $url]);
             }
 
@@ -116,15 +114,15 @@ final class ToolbarContextService
         try {
             $model = $this->findEntryByUri($uri, $siteHandle);
 
-            if (! $model) {
+            if (!$model) {
                 $model = $this->findEntryByAbsoluteUrl($absoluteUrl, $siteHandle);
             }
 
-            if (! $model) {
+            if (!$model) {
                 $model = $this->findTermByUri($uri, $siteHandle);
             }
 
-            if ($uri === '/' && ! $model) {
+            if ($uri === '/' && !$model) {
                 $model = $this->findHomeEntry($site);
             }
 
@@ -165,7 +163,7 @@ final class ToolbarContextService
             ->first(function (EntryContract $entry) use ($absoluteUrl) {
                 $entryUrl = $entry->url();
 
-                if (! $entryUrl) {
+                if (!$entryUrl) {
                     return false;
                 }
 
@@ -202,7 +200,7 @@ final class ToolbarContextService
         return $entry instanceof EntryContract ? $entry : null;
     }
 
-    private function generateEditUrl(EntryContract|TermContract|null $model, UserContract $user): ?string
+    private function generateEditUrl(EntryContract|TermContract|null $model, Authorizable $user): ?string
     {
         if ($model && method_exists($model, 'editUrl') && $user->can('edit', $model)) {
             return $model->editUrl();
@@ -213,7 +211,7 @@ final class ToolbarContextService
 
     private function generateSeoUrl(EntryContract|TermContract|null $model, ?string $editUrl): ?string
     {
-        if (! $model || ! $editUrl) {
+        if (!$model || !$editUrl) {
             return null;
         }
 
@@ -227,7 +225,7 @@ final class ToolbarContextService
         return $seoProAddon ? $editUrl . '#seo' : null;
     }
 
-    private function generateCreateUrl(EntryContract|TermContract|null $model, UserContract $user): ?string
+    private function generateCreateUrl(EntryContract|TermContract|null $model, Authorizable $user): ?string
     {
         if ($model instanceof EntryContract) {
             $collection = $model->collection();
@@ -262,7 +260,7 @@ final class ToolbarContextService
                 return null;
             }
 
-            return $sites->map(fn (ConcreteSite $site) => [
+            return $sites->map(fn(ConcreteSite $site) => [
                 'name' => $site->name(),
                 'url' => $site->absoluteUrl(),
                 'handle' => $site->handle(),

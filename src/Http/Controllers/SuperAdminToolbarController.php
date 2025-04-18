@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace SuperInteractive\SuperAdminToolbar\Http\Controllers;
 
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
-use Statamic\Contracts\Auth\User as UserContract;
 use Statamic\Http\Controllers\Controller;
 use SuperInteractive\SuperAdminToolbar\Services\ManifestService;
 use SuperInteractive\SuperAdminToolbar\Services\ToolbarContextService;
@@ -22,53 +23,81 @@ final class SuperAdminToolbarController extends Controller
 
     public function __invoke(Request $request, ToolbarContextService $contextService, ManifestService $manifestService): JsonResponse
     {
+        /** @var Authorizable|null $user */
         $user = auth(config('statamic.users.guards.cp', 'web'))->user();
 
-        if (!$this->isUserAuthorized($user)) {
+        if (!$this->userIsAuthorized($user)) {
             return response()->json(['authenticated' => false]);
         }
 
-        $currentUrl = $request->input('url');
+        $currentUrl = (string)$request->input('url', '');
 
-        if (!is_string($currentUrl) || $currentUrl === '') {
+        if ($currentUrl === '') {
             Log::warning('SuperAdminToolbar: Invalid or missing URL.', ['url' => $currentUrl]);
+
             return response()->json(['error' => 'Invalid or missing URL.'], 400);
         }
 
-        $payload = $this->preparePayload($currentUrl, $user, $contextService, $manifestService);
+        $payload = $this->buildPayload($currentUrl, $user, $contextService, $manifestService);
 
-        return $payload ? response()->json($payload) : response()->json(['error' => 'Toolbar processing error.'], 500);
+        return $payload
+            ? response()->json($payload)
+            : response()->json(['error' => 'Toolbar processing error.'], 500);
     }
 
-    private function isUserAuthorized(?UserContract $user): bool
+    private function userIsAuthorized(?Authorizable $user): bool
     {
-        return $user && ($user->isSuper() || $user->hasPermission('access cp'));
+        if (!$user) {
+            return false;
+        }
+
+        $ability = (string) config('super-admin-toolbar.permission', 'access cp');
+
+        if ($ability && Gate::forUser($user)->allows($ability)) {
+            return true;
+        }
+
+        if (method_exists($user, 'isSuper') && $user->isSuper()) {
+            return true;
+        }
+
+        if (method_exists($user, 'hasPermission') && $user->hasPermission($ability)) {
+            return true;
+        }
+
+        return false;
     }
 
-    private function preparePayload(string $url, UserContract $user, ToolbarContextService $contextService, ManifestService $manifestService): ?array
+    private function buildPayload(string $url, Authorizable $user, ToolbarContextService $contextService, ManifestService $manifestService): ?array
     {
         $assets = $manifestService->getJsAndCssUrls(self::JS_ENTRY_KEY, self::CSS_ENTRY_KEY);
 
         $html = $this->renderHtml($url, $user, $contextService);
 
-        return $html !== null ? [
+        if ($html === null) {
+            return null;
+        }
+
+        return [
             'html' => $html,
             'css' => $assets['css'],
             'js' => $assets['js'],
             'authenticated' => true,
-        ] : null;
+        ];
     }
 
-    private function renderHtml(string $url, UserContract $user, ToolbarContextService $contextService): ?string
+    private function renderHtml(string $url, Authorizable $user, ToolbarContextService $contextService): ?string
     {
         try {
             $context = $contextService->buildContextData($url, $user);
+
             return View::make(self::VIEW_NAME, $context)->render();
         } catch (Throwable $e) {
             Log::error('SuperAdminToolbar: View rendering failed.', [
                 'view' => self::VIEW_NAME,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
