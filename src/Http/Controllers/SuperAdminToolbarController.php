@@ -51,7 +51,7 @@ final class SuperAdminToolbarController extends Controller
             return false;
         }
 
-        $ability = (string) config('super-admin-toolbar.permission', 'access cp');
+        $ability = (string)config('super-admin-toolbar.permission', 'access cp');
 
         if ($ability && Gate::forUser($user)->allows($ability)) {
             return true;

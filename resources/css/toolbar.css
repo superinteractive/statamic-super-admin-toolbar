@@ -1,8 +1,13 @@
-.super-admin-toolbar {
-    @tailwind base;
-}
-
+/* no @tailwind base here ⟶ no global reset leaks out */
 @tailwind components;
 @tailwind utilities;
 
-/* Optional: define extra styles here */
+/* If you still want a *tiny* reset **inside** the toolbar,
+   write it yourself *after* the Tailwind layers */
+.super-admin-toolbar * {
+    box-sizing: border-box;
+}
+.super-admin-toolbar button {
+    background: none;
+    border: 0;
+}
