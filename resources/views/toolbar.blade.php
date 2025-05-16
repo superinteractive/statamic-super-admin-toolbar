@@ -1,5 +1,5 @@
 <div id="super-admin-toolbar" class="super-admin-toolbar si-group-toggleable" @if($toolbarOpened) si-group-toggled="true" @endif>
-    <div class="fixed bottom-4 left-4 z-50 pr-4 !font-sans">
+    <div class="fixed bottom-4 left-4 z-[2147483647] pr-4 !font-sans">
         <div class="flex max-h-10 min-w-10 cursor-pointer flex-col gap-0 rounded bg-[#F1F1F1] shadow-super-toolbar si-group-toggled:max-w-full max-md:si-group-toggled:max-h-96 md:flex-row md:items-center md:transition-all md:duration-500">
             {{-- Toggle Button --}}
             <div class="order-2 md:order-1">
