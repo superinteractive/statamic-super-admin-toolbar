@@ -25,7 +25,7 @@
                 @if ($editUrl)
                     <a href="{{ $editUrl }}" title="{{ __("Edit this item") }}" class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto">
                         <x-sat-icon src="pencil" class="h-2.5 w-2.5" />
-                        <span class="shrink-0">{{ __("Edit :item", ["item" => $itemSingularName]) }}</span>
+                        <span class="shrink-0">{{ __("Edit Entry") }}</span>
                     </a>
                 @endif
 
@@ -41,7 +41,7 @@
                 @if ($createUrl)
                     <a href="{{ $createUrl }}" title="{{ __("Create new entry") }}" class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto">
                         <x-sat-icon src="plus" class="h-2.5 w-2.5" />
-                        <span class="shrink-0">{{ __("New :item", ["item" => $itemSingularName]) }}</span>
+                        <span class="shrink-0">{{ __("Create Entry") }}</span>
                     </a>
                 @endif
 

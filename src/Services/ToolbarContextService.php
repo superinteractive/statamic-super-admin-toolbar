@@ -47,7 +47,6 @@ class ToolbarContextService
             'seoUrl' => null,
             'currentModel' => null,
             'toolbarOpened' => $this->isToolbarOpened(),
-            'itemSingularName' => __('Item'),
             'multiSites' => null,
             'currentSiteHandle' => null,
         ];
@@ -58,24 +57,12 @@ class ToolbarContextService
 
         $context['multiSites'] = $this->getMultiSitesData();
 
-        $context['itemSingularName'] = $this->getItemSingularName($model);
-        $context['editUrl'] = $this->generateEditUrl($model, $user);
         $context['currentModel'] = $model;
-        $context['itemSingularName'] = $this->getItemSingularName($model);
         $context['editUrl'] = $this->generateEditUrl($model, $user);
         $context['createUrl'] = $this->generateCreateUrl($model, $user);
         $context['seoUrl'] = $this->generateSeoUrl($model, $context['editUrl']);
 
         return $context;
-    }
-
-    private function getItemSingularName(EntryContract|TermContract|null $model): string
-    {
-        return match (true) {
-            $model instanceof EntryContract => Str::singular($model->collection()->title()),
-            $model instanceof TermContract => Str::singular($model->taxonomy()->title()),
-            default => __('Item'),
-        };
     }
 
     private function generateEditUrl(EntryContract|TermContract|null $model, Authorizable $user): ?string
@@ -115,10 +102,6 @@ class ToolbarContextService
                     'site' => $model->site()->handle(),
                 ]);
             }
-        }
-
-        if ($user->can('create', EntryContract::class)) {
-            return cp_route('collections.index');
         }
 
         return null;

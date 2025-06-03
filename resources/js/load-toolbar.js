@@ -1,64 +1,3 @@
-function getMetaToken() {
-  const tag = document.querySelector('meta[name="csrf-token"]');
-  if (tag) {
-    return tag.getAttribute('content');
-  }
-
-  return '';
-}
-
-function setMetaToken(token) {
-  let tag = document.querySelector('meta[name="csrf-token"]');
-
-  if (!tag) {
-    tag = document.createElement('meta');
-    tag.setAttribute('name', 'csrf-token');
-    document.head.appendChild(tag);
-  }
-
-  tag.setAttribute('content', token);
-}
-
-function updateLivewireToken(token) {
-  if (window.livewireScriptConfig) {
-    window.livewireScriptConfig.csrf = token;
-  }
-
-  if (window.Livewire) {
-    if (typeof window.Livewire.updateCsrfToken === 'function') {
-      window.Livewire.updateCsrfToken(token);
-    } else if ('csrfToken' in window.Livewire) {
-      window.Livewire.csrfToken = token;
-    }
-  }
-}
-
-function getCookie(name) {
-  const cookieString = `; ${document.cookie}`;
-  const parts = cookieString.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop().split(';').shift();
-  }
-
-  return null;
-}
-
-function getCsrfTokenFromResponse(response) {
-  let token = response.headers.get('x-csrf-token');
-
-  if (!token) {
-    token = response.headers.get('X-CSRF-TOKEN');
-  }
-
-  if (!token) {
-    const cookie = getCookie('XSRF-TOKEN');
-    if (cookie !== null) {
-      token = decodeURIComponent(cookie);
-    }
-  }
-
-  return token;
-}
 
 function getContextData() {
   const contextTag = document.getElementById('super-admin-toolbar-context-json');
@@ -122,23 +61,20 @@ async function loadToolbar() {
 
   const contextData = getContextData();
 
-  const response = await fetch('/super-admin-toolbar', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      'X-CSRF-TOKEN': getMetaToken(),
-    },
-    credentials: 'same-origin',
-    body: JSON.stringify(contextData),
+  const queryParams = new URLSearchParams();
+
+  // Add context data as query parameters
+  Object.entries(contextData).forEach(([key, value]) => {
+    queryParams.append(key, value);
   });
 
-  const rotatedToken = getCsrfTokenFromResponse(response);
-
-  if (rotatedToken) {
-    setMetaToken(rotatedToken);
-    updateLivewireToken(rotatedToken);
-  }
+  const response = await fetch(`/super-admin-toolbar?${queryParams.toString()}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    credentials: 'same-origin',
+  });
 
   if (!response.ok) {
     throw new Error(`HTTP error. Status: ${response.status}`);

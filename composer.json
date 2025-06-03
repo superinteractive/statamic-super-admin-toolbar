@@ -3,7 +3,10 @@
   "autoload": {
     "psr-4": {
       "SuperInteractive\\SuperAdminToolbar\\": "src"
-    }
+    },
+    "files": [
+      "src/helpers.php"
+    ]
   },
   "require": {
     "statamic/cms": "^5.0",

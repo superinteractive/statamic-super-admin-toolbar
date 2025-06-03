@@ -20,7 +20,6 @@ use Throwable;
 
 final class SuperAdminToolbarController extends Controller
 {
-
     public function __invoke(Request $request, ToolbarContextService $contextService, ManifestService $manifestService): JsonResponse
     {
         $user = auth(config('statamic.users.guards.cp', 'web'))->user();
@@ -45,6 +44,9 @@ final class SuperAdminToolbarController extends Controller
         }
 
         $site = Site::get($siteHandle);
+
+        // Initialize $model with null as default
+        $model = null;
 
         if ($pageType === 'entry') {
             $model = Entry::findOrFail($request->input('entry', null));
