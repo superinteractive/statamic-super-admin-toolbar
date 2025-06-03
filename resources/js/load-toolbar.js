@@ -1,68 +1,110 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute('content');
 
-    if (document.getElementById('super-admin-toolbar')) {
-        return;
+function getContextData() {
+  const contextTag = document.getElementById('super-admin-toolbar-context-json');
+
+  if (!contextTag) {
+    return {};
+  }
+
+  const text = contextTag.textContent.trim();
+
+  if (text.length === 0) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('Super Admin Toolbar: invalid JSON in context tag.', error);
+    return {};
+  }
+}
+
+function insertToolbarHtml(html) {
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function createToolbarStyleSheet(href) {
+  const link = document.createElement('link');
+  link.setAttribute('rel', 'stylesheet');
+  link.setAttribute('href', href);
+  document.head.appendChild(link);
+}
+
+function createToolbarScript(src) {
+  const script = document.createElement('script');
+  script.setAttribute('type', 'module');
+  script.setAttribute('src', src);
+
+  script.onload = function () {
+    if (typeof SuperAdminToolbar !== 'undefined') {
+      const toolbar = new SuperAdminToolbar();
+      toolbar.init();
+    } else {
+      console.error('SuperAdminToolbar class not found after loading script.');
+    }
+  };
+
+  script.onerror = function () {
+    console.error('Failed to load toolbar script:', src);
+  };
+
+  document.body.appendChild(script);
+}
+
+async function loadToolbar() {
+  const toolbarExists = document.getElementById('super-admin-toolbar');
+
+  if (toolbarExists) {
+    return;
+  }
+
+  const contextData = getContextData();
+
+  const queryParams = new URLSearchParams();
+
+  // Add context data as query parameters
+  Object.entries(contextData).forEach(([key, value]) => {
+    queryParams.append(key, value);
+  });
+
+  const response = await fetch(`/super-admin-toolbar?${queryParams.toString()}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    credentials: 'same-origin',
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error. Status: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (!data || data.authenticated === false) {
+    return;
+  }
+
+  if (data.html) {
+    insertToolbarHtml(data.html);
+  }
+
+  if (data.css) {
+    createToolbarStyleSheet(data.css);
+  }
+
+  if (data.js) {
+    createToolbarScript(data.js);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  loadToolbar().catch(function (error) {
+    if (error === 'unauthorized') {
+      return;
     }
 
-    fetch('/super-admin-toolbar', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
-        },
-        body: JSON.stringify({url: window.location.href}),
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            return response.json();
-        })
-        .then(data => {
-            if (!data || data.authenticated === false) {
-                return; // User not authenticated, silently exit
-            }
-
-            if (!data.html) {
-                return;
-            }
-
-            document.body.insertAdjacentHTML('beforeend', data.html);
-
-            if (data.css) {
-                const linkEl = document.createElement('link');
-                linkEl.setAttribute('rel', 'stylesheet');
-                linkEl.setAttribute('href', data.css);
-                document.head.appendChild(linkEl);
-            }
-
-            if (data.js) {
-                const scriptEl = document.createElement('script');
-                scriptEl.setAttribute('src', data.js);
-                scriptEl.setAttribute('type', 'module');
-
-                scriptEl.onload = () => {
-                    if (typeof SuperAdminToolbar !== 'undefined') {
-                        const superAdminToolbar = new SuperAdminToolbar();
-                        superAdminToolbar.init();
-                    } else {
-                        console.error('SuperAdminToolbar class not found after loading script.');
-                    }
-                };
-                scriptEl.onerror = () => {
-                    console.error('Failed to load toolbar script:', data.js);
-                };
-                document.body.appendChild(scriptEl);
-            }
-        })
-        .catch(err => {
-            if (err === 'unauthorized') return; // Silent fail
-
-            console.error('Error loading Super Admin Toolbar:', err);
-        });
+    console.error('Error loading Super Admin Toolbar:', error);
+  });
 });

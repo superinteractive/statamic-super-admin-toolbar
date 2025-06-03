@@ -27,14 +27,10 @@ class ManifestService
         $this->manifestPath = $this->basePublicPath . self::BUILD_DIR . 'manifest.json';
     }
 
-    public function getJsAndCssUrls(string $jsEntryKey, string $cssEntryKey): array
+    public function getJsAndCssUrls(): array
     {
-        $jsUrl = $this->getAssetUrl($jsEntryKey);
-        $cssUrl = $this->getAssetUrl($cssEntryKey);
-
-        if (is_null($cssUrl)) {
-            $cssUrl = $this->resolveCssFromJsEntry($jsEntryKey);
-        }
+        $jsUrl = $this->getAssetUrl('resources/js/toolbar.js');
+        $cssUrl = $this->getAssetUrl('resources/css/toolbar.css');
 
         return [
             'js' => $jsUrl,
@@ -89,21 +85,6 @@ class ManifestService
         }
 
         return $entry;
-    }
-
-    private function resolveCssFromJsEntry(string $jsEntryKey): ?string
-    {
-        $manifest = $this->loadManifest();
-
-        if (is_null($manifest)) {
-            return null;
-        }
-
-        $cssPath = $manifest[$jsEntryKey]['css'][0] ?? null;
-
-        return $cssPath
-            ? rtrim($this->basePublicUrl, '/') . '/' . self::BUILD_DIR . ltrim($cssPath, '/')
-            : null;
     }
 
     private function loadManifest(): ?array

@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
+use Statamic\Facades\Entry;
+use Statamic\Facades\Site;
+use Statamic\Facades\Term;
 use Statamic\Http\Controllers\Controller;
 use SuperInteractive\SuperAdminToolbar\Services\ManifestService;
 use SuperInteractive\SuperAdminToolbar\Services\ToolbarContextService;
@@ -17,28 +20,43 @@ use Throwable;
 
 final class SuperAdminToolbarController extends Controller
 {
-    private const JS_ENTRY_KEY = 'resources/js/toolbar.js';
-    private const CSS_ENTRY_KEY = 'resources/css/toolbar.css';
-    private const VIEW_NAME = 'super-admin-toolbar::toolbar';
-
     public function __invoke(Request $request, ToolbarContextService $contextService, ManifestService $manifestService): JsonResponse
     {
-        /** @var Authorizable|null $user */
         $user = auth(config('statamic.users.guards.cp', 'web'))->user();
 
         if (!$this->userIsAuthorized($user)) {
             return response()->json(['authenticated' => false]);
         }
 
-        $currentUrl = (string)$request->input('url', '');
+        $siteHandle = $request->input('siteHandle', '');
+        $pageType = $request->input('pageType', '');
 
-        if ($currentUrl === '') {
-            Log::warning('SuperAdminToolbar: Invalid or missing URL.', ['url' => $currentUrl]);
+        if (empty($siteHandle)) {
+            Log::warning('SuperAdminToolbar: Invalid or missing site handle.', ['siteHandle' => $siteHandle]);
 
-            return response()->json(['error' => 'Invalid or missing URL.'], 400);
+            return response()->json(['error' => 'Invalid or missing site handle.'], 400);
         }
 
-        $payload = $this->buildPayload($currentUrl, $user, $contextService, $manifestService);
+        if (empty($pageType)) {
+            Log::warning('SuperAdminToolbar: Invalid or missing page type.', ['pageType' => $pageType]);
+
+            return response()->json(['error' => 'Invalid or missing page type.'], 400);
+        }
+
+        $site = Site::get($siteHandle);
+
+        // Initialize $model with null as default
+        $model = null;
+
+        if ($pageType === 'entry') {
+            $model = Entry::findOrFail($request->input('entry', null));
+        }
+
+        if ($pageType === 'term') {
+            $model = Term::findOrFail($request->input('term', null));
+        }
+
+        $payload = $this->buildPayload($site, $model);
 
         return $payload
             ? response()->json($payload)
@@ -68,11 +86,13 @@ final class SuperAdminToolbarController extends Controller
         return false;
     }
 
-    private function buildPayload(string $url, Authorizable $user, ToolbarContextService $contextService, ManifestService $manifestService): ?array
+    private function buildPayload($site, $model): ?array
     {
-        $assets = $manifestService->getJsAndCssUrls(self::JS_ENTRY_KEY, self::CSS_ENTRY_KEY);
+        $manifestService = new ManifestService();
 
-        $html = $this->renderHtml($url, $user, $contextService);
+        $assets = $manifestService->getJsAndCssUrls();
+
+        $html = $this->renderHtml($site, $model);
 
         if ($html === null) {
             return null;
@@ -86,15 +106,17 @@ final class SuperAdminToolbarController extends Controller
         ];
     }
 
-    private function renderHtml(string $url, Authorizable $user, ToolbarContextService $contextService): ?string
+    private function renderHtml($site, $model): ?string
     {
-        try {
-            $context = $contextService->buildContextData($url, $user);
+        $contextService = new ToolbarContextService();
 
-            return View::make(self::VIEW_NAME, $context)->render();
+        try {
+            $context = $contextService->buildContextData($site, $model);
+
+            return View::make('super-admin-toolbar::toolbar', $context)->render();
         } catch (Throwable $e) {
             Log::error('SuperAdminToolbar: View rendering failed.', [
-                'view' => self::VIEW_NAME,
+                'view' => 'super-admin-toolbar::toolbar',
                 'error' => $e->getMessage(),
             ]);
 
