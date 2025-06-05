@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace SuperInteractive\SuperAdminToolbar\Http\Controllers;
 
-use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Statamic\Facades\Entry;
@@ -16,6 +14,7 @@ use Statamic\Facades\Term;
 use Statamic\Http\Controllers\Controller;
 use SuperInteractive\SuperAdminToolbar\Services\ManifestService;
 use SuperInteractive\SuperAdminToolbar\Services\ToolbarContextService;
+use SuperInteractive\SuperAdminToolbar\Helpers\ToolbarHelpers;
 use Throwable;
 
 final class SuperAdminToolbarController extends Controller
@@ -24,12 +23,13 @@ final class SuperAdminToolbarController extends Controller
     {
         $user = auth(config('statamic.users.guards.cp', 'web'))->user();
 
-        if (!$this->userIsAuthorized($user)) {
+        if (!ToolbarHelpers::userIsAuthorized($user)) {
             return response()->json(['authenticated' => false]);
         }
 
         $siteHandle = $request->input('siteHandle', '');
         $pageType = $request->input('pageType', '');
+        $currentPath = $request->input('currentPath', '');
 
         if (empty($siteHandle)) {
             Log::warning('SuperAdminToolbar: Invalid or missing site handle.', ['siteHandle' => $siteHandle]);
@@ -56,43 +56,21 @@ final class SuperAdminToolbarController extends Controller
             $model = Term::findOrFail($request->input('term', null));
         }
 
-        $payload = $this->buildPayload($site, $model);
+        $payload = $this->buildPayload($site, $model, $currentPath);
 
         return $payload
             ? response()->json($payload)
             : response()->json(['error' => 'Toolbar processing error.'], 500);
     }
 
-    private function userIsAuthorized(?Authorizable $user): bool
-    {
-        if (!$user) {
-            return false;
-        }
 
-        $ability = (string)config('super-admin-toolbar.permission', 'access cp');
-
-        if ($ability && Gate::forUser($user)->allows($ability)) {
-            return true;
-        }
-
-        if (method_exists($user, 'isSuper') && $user->isSuper()) {
-            return true;
-        }
-
-        if (method_exists($user, 'hasPermission') && $user->hasPermission($ability)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private function buildPayload($site, $model): ?array
+    private function buildPayload($site, $model, $currentPath): ?array
     {
         $manifestService = new ManifestService();
 
         $assets = $manifestService->getJsAndCssUrls();
 
-        $html = $this->renderHtml($site, $model);
+        $html = $this->renderHtml($site, $model, $currentPath);
 
         if ($html === null) {
             return null;
@@ -106,12 +84,13 @@ final class SuperAdminToolbarController extends Controller
         ];
     }
 
-    private function renderHtml($site, $model): ?string
+    private function renderHtml($site, $model, $currentPath): ?string
     {
-        $contextService = new ToolbarContextService();
+        $contextService = app(ToolbarContextService::class);
 
         try {
             $context = $contextService->buildContextData($site, $model);
+            $context['currentPath'] = $currentPath;
 
             return View::make('super-admin-toolbar::toolbar', $context)->render();
         } catch (Throwable $e) {

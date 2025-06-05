@@ -33,6 +33,7 @@ class ServiceProvider extends AddonServiceProvider
         parent::bootAddon();
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'super-admin-toolbar');
+        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'super-admin-toolbar');
         Blade::component(Icon::class, 'sat-icon');
 
         Blade::directive('superAdminToolbar', function () {

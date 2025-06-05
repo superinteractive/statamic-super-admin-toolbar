@@ -3,7 +3,7 @@
         <div class="flex max-h-10 min-w-10 cursor-pointer flex-col gap-0 rounded bg-[#F1F1F1] shadow-super-toolbar si-group-toggled:max-w-full max-md:si-group-toggled:max-h-96 md:flex-row md:items-center md:transition-all md:duration-500">
             {{-- Toggle Button --}}
             <div class="order-2 md:order-1">
-                <button class="inline-flex w-full md:w-auto items-center justify-start p-2" type="button" id="super-admin-toolbar-toggle" aria-label="{{ __("Toggle Admin Toolbar") }}">
+                <button class="inline-flex w-full md:w-auto items-center justify-start p-2" type="button" id="super-admin-toolbar-toggle" aria-label="{{ __('super-admin-toolbar::toolbar.Toggle Admin Toolbar') }}">
                     <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-toolbar-gradient text-[#FFFFFF] shadow-toolbar-icon">
                         <x-sat-icon src="chevron-right" class="h-3 w-3 -rotate-90 fill-[#FFFFFF] si-group-toggled:rotate-90 md:rotate-0 si-group-toggled:md:-rotate-180" />
                     </span>
@@ -14,34 +14,33 @@
                 {{-- Dashboard Link --}}
                 <a
                     href="{{ cp_route("dashboard") }}"
-                    title="{{ __("Go to Control Panel Dashboard") }}"
                     class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto"
                 >
                     <x-sat-icon src="dashboard" class="h-2.5 w-2.5" />
-                    <span class="shrink-0">{{ __("Dashboard") }}</span>
+                    <span class="shrink-0">{{ __('super-admin-toolbar::toolbar.Dashboard') }}</span>
                 </a>
 
                 {{-- Edit Link --}}
                 @if ($editUrl)
-                    <a href="{{ $editUrl }}" title="{{ __("Edit this item") }}" class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto">
+                    <a href="{{ $editUrl }}" class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto">
                         <x-sat-icon src="pencil" class="h-2.5 w-2.5" />
-                        <span class="shrink-0">{{ __("Edit Entry") }}</span>
+                        <span class="shrink-0">{{ __('super-admin-toolbar::toolbar.Edit Entry') }}</span>
                     </a>
                 @endif
 
                 {{-- SEO Link --}}
                 @if ($seoUrl)
-                    <a href="{{ $seoUrl }}" title="{{ __("Edit SEO Settings") }}" class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto">
+                    <a href="{{ $seoUrl }}" class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto">
                         <x-sat-icon src="seo" class="h-2.5 w-2.5" />
-                        <span class="shrink-0">{{ __("Edit SEO") }}</span>
+                        <span class="shrink-0">{{ __('super-admin-toolbar::toolbar.Edit SEO') }}</span>
                     </a>
                 @endif
 
                 {{-- Create Link --}}
                 @if ($createUrl)
-                    <a href="{{ $createUrl }}" title="{{ __("Create new entry") }}" class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto">
+                    <a href="{{ $createUrl }}" class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto">
                         <x-sat-icon src="plus" class="h-2.5 w-2.5" />
-                        <span class="shrink-0">{{ __("Create Entry") }}</span>
+                        <span class="shrink-0">{{ __('super-admin-toolbar::toolbar.Create Entry') }}</span>
                     </a>
                 @endif
 
@@ -51,12 +50,11 @@
                         <button
                             type="button"
                             data-dropdown-toggle="site-switcher-menu"
-                            title="{{ __("Switch Site") }}"
                             class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto"
                         >
                             <x-sat-icon src="sites" class="h-2.5 w-2.5" />
 
-                            <span class="shrink-0">{{ __("Sites") }}</span>
+                            <span class="shrink-0">{{ __('super-admin-toolbar::toolbar.Sites') }}</span>
 
                             <x-sat-icon src="ellipsis" class="h-2.5 w-2.5 -rotate-90" data-dropdown-chevron />
                         </button>
@@ -74,6 +72,41 @@
                                     {{ $site["name"] }}
                                 </a>
                             @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Entry Cache Dropdown --}}
+                @if ($isFullMeasureStaticCachingEnabled)
+                    <div class="si-toolbar-dropdown-container relative w-full">
+                        <button
+                            type="button"
+                            data-dropdown-toggle="entry-cache-menu"
+                            class="inline-flex w-full shrink-0 items-center justify-start gap-1.5 rounded px-1.5 py-1 text-sm text-[#222222] hover:bg-[#E0E0E0] md:w-auto"
+                        >
+                            <x-sat-icon src="refresh" class="h-2.5 w-2.5" />
+
+                            <span class="shrink-0">{{ __('super-admin-toolbar::toolbar.Cache') }}</span>
+
+                            <x-sat-icon src="ellipsis" class="h-2.5 w-2.5 -rotate-90" data-dropdown-chevron />
+                        </button>
+
+                        {{-- Dropdown Menu --}}
+                        <div
+                            id="entry-cache-menu"
+                            class="absolute bottom-0 left-full z-10 ml-3 hidden max-h-60 min-w-[150px] max-w-[12.5rem] overflow-y-auto rounded bg-[#F1F1F1] py-1 shadow-md md:-right-2 md:bottom-full md:left-auto md:top-auto md:mb-3"
+                        >
+                            <form action="{{ route('super-admin-toolbar.entry-cache.refresh') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="path" value="{{ $currentPath === '/' ? '/' : '/' . $currentPath }}" />
+
+                                <button
+                                    type="submit"
+                                    class="block w-full text-left overflow-hidden overflow-ellipsis whitespace-nowrap px-3 py-1.5 text-sm text-[#222222] hover:bg-[#E0E0E0]"
+                                >
+                                    {{ __('super-admin-toolbar::toolbar.Refresh this page') }}
+                                </button>
+                            </form>
                         </div>
                     </div>
                 @endif

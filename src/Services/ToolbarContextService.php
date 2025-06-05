@@ -5,13 +5,13 @@ namespace SuperInteractive\SuperAdminToolbar\Services;
 use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Statamic\Contracts\Entries\Entry as EntryContract;
 use Statamic\Contracts\Taxonomies\Term as TermContract;
 use Statamic\Facades\Addon;
 use Statamic\Facades\Site as SiteAPI;
 use Statamic\Sites\Site as ConcreteSite;
 use Statamic\Taxonomies\LocalizedTerm;
+use SuperInteractive\SuperAdminToolbar\Helpers\ToolbarHelpers;
 use Throwable;
 
 class ToolbarContextService
@@ -21,6 +21,7 @@ class ToolbarContextService
         $data = [
             'siteHandle' => $site->handle,
             'pageType' => null,
+            'currentPath' => request()->path(),
         ];
 
         if (!empty($page)) {
@@ -49,6 +50,7 @@ class ToolbarContextService
             'toolbarOpened' => $this->isToolbarOpened(),
             'multiSites' => null,
             'currentSiteHandle' => null,
+            'isFullMeasureStaticCachingEnabled' => ToolbarHelpers::isFullMeasureStaticCachingEnabled(),
         ];
 
         if (!$site) {
@@ -132,4 +134,5 @@ class ToolbarContextService
             return null;
         }
     }
+
 }
