@@ -96,7 +96,7 @@ class ToolbarContextService
     {
         if ($model instanceof EntryContract) {
             $collection = $model->collection();
-            $canCreateInCollection = $user->can('create', EntryContract::class) && $user->can('create', [$collection::class, $collection]);
+            $canCreateInCollection = $user->can('create', [EntryContract::class, $collection]) && $user->can('create', [$collection::class, $collection]);
 
             if ($canCreateInCollection) {
                 return cp_route('collections.entries.create', [
