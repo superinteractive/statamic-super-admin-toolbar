@@ -8,16 +8,15 @@
 
 # Super Admin Toolbar
 
-An admin toolbar for Statamic 5 that streamlines content management for editors and copywriters.
+A powerful admin toolbar for Statamic 5 that enhances content management workflow for editors and copywriters. It provides quick access to editing tools, SEO settings, and site management directly from your frontend. Perfect for those coming from WordPress and missing the admin bar!
 
 ## Features
 
 - **Admin Toolbar**: Displays a toolbar for quick administrative actions when a user with `access cp` is signed in.
 - **Quick Edit Links**: Easily edit the current entry or quickly create a new entry in the same collection.
 - **Site Switcher**: Seamlessly switch between multi-sites right from the toolbar.
-- **Lazy Loaded**: Injected via JavaScript, ensuring minimal impact on initial page load.
-- **Static Cache Compatible**: Works smoothly with Statamic's static caching approach.
-- **SEO Pro Integration**: Convenient shortcuts to SEO Pro settings (when installed).
+- **Static Cache Compatible**: Works seamlessly with both full and half measure static caching approaches.
+- **SEO Pro Integration**: Convenient shortcuts to SEO Pro settings for optimizing your content.
 
 ## Installation
 
@@ -55,7 +54,13 @@ Finally, include the toolbar in your layout file — ideally **before** the clos
 
 ## Usage
 
-Once installed, the Super Admin Toolbar automatically loads for users with the `access cp` permission. The toolbar is lazy-loaded using JavaScript, ensuring compatibility with Statamic's full and half measure static caching.
+Once installed, the Super Admin Toolbar automatically loads for users with the `access cp` permission. The toolbar is dynamically injected using JavaScript, ensuring compatibility with Statamic's full and half measure static caching.
+
+## Supported Addons
+
+The Super Admin Toolbar integrates with the following Statamic addons:
+
+- **SEO Pro**: Quick access to SEO settings directly from the toolbar when viewing content on your site.
 
 ## Support
 
