@@ -1,19 +1,22 @@
 {
   "name": "superinteractive/statamic-super-admin-toolbar",
+  "version": "2.0.0",
+  "description": "Super Admin Toolbar addon for Statamic 6.",
   "autoload": {
     "psr-4": {
       "SuperInteractive\\SuperAdminToolbar\\": "src"
     }
   },
   "require": {
-    "statamic/cms": "^5.0",
+    "php": "^8.3",
+    "statamic/cms": "^6.0",
     "ext-dom": "*",
     "ext-libxml": "*"
   },
   "extra": {
     "statamic": {
       "name": "Super Admin Toolbar",
-      "description": "Super Admin Toolbar for Statamic 5."
+      "description": "Super Admin Toolbar for Statamic 6."
     },
     "laravel": {
       "providers": [

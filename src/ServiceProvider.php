@@ -13,6 +13,7 @@ class ServiceProvider extends AddonServiceProvider
 
     protected $vite = [
         'input' => [
+            'resources/js/load-toolbar.js',
             'resources/js/toolbar.js',
             'resources/css/toolbar.css',
         ],

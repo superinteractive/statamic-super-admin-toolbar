@@ -1,6 +1,6 @@
 <!-- statamic:hide -->
 
-![Statamic 5.0+](https://img.shields.io/badge/Statamic-5.0+-FF269E?style=flat-square&link=https://statamic.com)
+![Statamic 5.0+](https://img.shields.io/badge/Statamic-5.0+-FF269E?style=flat-square&link=https://statamic.com) ![Statamic 6.0+](https://img.shields.io/badge/Statamic-6.0+-FF269E?style=flat-square&link=https://statamic.com)
 
 ![Super Admin Toolbar](./docs/superadmintoolbar.jpg)
 
@@ -8,7 +8,7 @@
 
 # Super Admin Toolbar
 
-A powerful admin toolbar for Statamic 5 that enhances content management workflow for editors and copywriters. It provides quick access to editing tools, SEO settings, and site management directly from your frontend. Perfect for those coming from WordPress and missing the admin bar!
+A powerful admin toolbar for Statamic 6 that enhances content management workflow for editors and copywriters. It provides quick access to editing tools, SEO settings, and site management directly from your frontend. Perfect for those coming from WordPress and missing the admin bar!
 
 ## Features
 
@@ -17,6 +17,13 @@ A powerful admin toolbar for Statamic 5 that enhances content management workflo
 - **Site Switcher**: Seamlessly switch between multi-sites right from the toolbar.
 - **Static Cache Compatible**: Works seamlessly with both full and half measure static caching approaches.
 - **SEO Pro Integration**: Convenient shortcuts to SEO Pro settings for optimizing your content.
+
+## Compatibility
+
+| Addon Version | Statamic Version | Laravel | PHP |
+| --- | --- | --- | --- |
+| ^2.0.0 | 6.x | 12.x | 8.3+ |
+| ^1.0.0 | 5.x | 11.x | 8.2+ |
 
 ## Installation
 

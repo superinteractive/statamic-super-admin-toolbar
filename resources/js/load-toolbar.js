@@ -59,7 +59,16 @@ async function loadToolbar() {
     return;
   }
 
+  // Statamic CP pages have a #statamic root; toolbar is frontend-only.
+  if (document.getElementById('statamic')) {
+    return;
+  }
+
   const contextData = getContextData();
+
+  if (!contextData.siteHandle || !contextData.pageType) {
+    return;
+  }
 
   const queryParams = new URLSearchParams();
 

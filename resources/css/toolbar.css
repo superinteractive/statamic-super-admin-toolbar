@@ -1,6 +1,7 @@
-/* no @tailwind base here ⟶ no global reset leaks out */
-@tailwind components;
-@tailwind utilities;
+@config "../../tailwind.config.js";
+/* Avoid global resets: import only Tailwind layers we need. */
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
 
 /* If you still want a *tiny* reset **inside** the toolbar,
    write it yourself *after* the Tailwind layers */

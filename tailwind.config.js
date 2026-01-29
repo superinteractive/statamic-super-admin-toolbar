@@ -15,10 +15,6 @@ module.exports = {
       },
     },
   },
-  corePlugins: {
-    preflight: false,
-    container: false,
-  },
   plugins: [
     plugin(function ({ addVariant, e }) {
       addVariant('si-group-toggled', '[si-group-toggled] &');

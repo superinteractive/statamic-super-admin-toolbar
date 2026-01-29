@@ -1,17 +1,21 @@
 {
   "resources/css/toolbar.css": {
-    "file": "assets/toolbar-BMUEHJLc.css",
+    "file": "assets/toolbar-BwkWK2FH.css",
     "src": "resources/css/toolbar.css",
-    "isEntry": true
+    "isEntry": true,
+    "name": "toolbar",
+    "names": [
+      "toolbar.css"
+    ]
   },
   "resources/js/load-toolbar.js": {
-    "file": "assets/load-toolbar-CEMYvDsP.js",
+    "file": "assets/load-toolbar-CCW9bCG9.js",
     "name": "load-toolbar",
     "src": "resources/js/load-toolbar.js",
     "isEntry": true
   },
   "resources/js/toolbar.js": {
-    "file": "assets/toolbar-PwXFMNCp.js",
+    "file": "assets/toolbar-CacwQpCm.js",
     "name": "toolbar",
     "src": "resources/js/toolbar.js",
     "isEntry": true
