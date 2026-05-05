@@ -1,6 +1,5 @@
 {
   "name": "superinteractive/statamic-super-admin-toolbar",
-  "version": "2.0.0",
   "description": "Super Admin Toolbar addon for Statamic 6.",
   "autoload": {
     "psr-4": {
