@@ -3,16 +3,13 @@
 namespace SuperInteractive\SuperAdminToolbar\Services;
 
 use Illuminate\Contracts\Auth\Access\Authorizable;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Log;
 use Statamic\Contracts\Entries\Entry as EntryContract;
 use Statamic\Contracts\Taxonomies\Term as TermContract;
 use Statamic\Facades\Addon;
 use Statamic\Facades\Site as SiteAPI;
-use Statamic\Sites\Site as ConcreteSite;
+use Statamic\Sites\Site;
 use Statamic\Taxonomies\LocalizedTerm;
 use SuperInteractive\SuperAdminToolbar\Helpers\ToolbarHelpers;
-use Throwable;
 
 class ToolbarContextService
 {
@@ -20,76 +17,52 @@ class ToolbarContextService
     {
         $data = [
             'siteHandle' => $site->handle,
-            'pageType' => null,
+            'pageType' => 'generic',
             'currentPath' => request()->path(),
         ];
 
-        if (!empty($page)) {
-            if ($page instanceof LocalizedTerm) {
-                $data['pageType'] = 'term';
-                $data['term'] = $page->term()->id();
-            } else {
-                $data['pageType'] = 'entry';
-                $data['entry'] = $page->id;
-            }
+        if ($page instanceof LocalizedTerm) {
+            $data['pageType'] = 'term';
+            $data['term'] = $page->id();
+        } elseif ($page instanceof EntryContract && $page->id()) {
+            $data['pageType'] = 'entry';
+            $data['entry'] = $page->id();
         }
 
         return json_encode($data, JSON_PRETTY_PRINT);
     }
 
-    public function buildContextData($site, $model): array
+    public function buildContextData(Site $site, EntryContract|TermContract|null $model): array
     {
         /* @var Authorizable */
         $user = auth(config('statamic.users.guards.cp', 'web'))->user();
 
-        $context = [
-            'editUrl' => null,
-            'createUrl' => null,
-            'seoUrl' => null,
-            'currentModel' => null,
-            'toolbarOpened' => $this->isToolbarOpened(),
-            'multiSites' => null,
-            'currentSiteHandle' => null,
+        $editUrl = $model && $user->can('edit', $model) ? $model->editUrl() : null;
+
+        return [
+            'editUrl' => $editUrl,
+            'createUrl' => $this->generateCreateUrl($model, $user),
+            'seoUrl' => $editUrl ? $this->generateSeoUrl($model, $editUrl) : null,
+            'toolbarOpened' => ($_COOKIE['super-admin-toolbar-opened'] ?? 'false') === 'true',
+            'multiSites' => $this->getMultiSitesData(),
+            'currentSiteHandle' => $site->handle(),
             'isFullMeasureStaticCachingEnabled' => ToolbarHelpers::isFullMeasureStaticCachingEnabled(),
         ];
-
-        if (!$site) {
-            return $context;
-        }
-
-        $context['multiSites'] = $this->getMultiSitesData();
-
-        $context['currentModel'] = $model;
-        $context['editUrl'] = $this->generateEditUrl($model, $user);
-        $context['createUrl'] = $this->generateCreateUrl($model, $user);
-        $context['seoUrl'] = $this->generateSeoUrl($model, $context['editUrl']);
-
-        return $context;
     }
 
-    private function generateEditUrl(EntryContract|TermContract|null $model, Authorizable $user): ?string
+    private function generateSeoUrl(EntryContract|TermContract $model, string $editUrl): ?string
     {
-        if ($model && method_exists($model, 'editUrl') && $user->can('edit', $model)) {
-            return $model->editUrl();
-        }
-
-        return null;
-    }
-
-    private function generateSeoUrl(EntryContract|TermContract|null $model, ?string $editUrl): ?string
-    {
-        if (!$model || !$editUrl) {
+        if (!Addon::get('statamic/seo-pro')) {
             return null;
         }
 
-        try {
-            $seoProAddon = Addon::get('statamic/seo-pro');
-        } catch (Throwable $e) {
-            Log::error("ToolbarContextService: Error checking for SEO Pro addon.", ['exception' => $e]);
-            return null;
-        }
+        $handle = $model->blueprint()->tabs()
+            ->first(fn ($tab) => $tab->fields()->get('seo')?->type() === 'seo_pro')
+            ?->handle();
 
-        return $seoProAddon ? $editUrl . '#seo' : null;
+        // The CP compares the raw URL fragment with tab handles, so a handle that needs encoding
+        // (like SEO Pro's default "SEO Meta") would open the first tab instead.
+        return $handle && rawurlencode($handle) === $handle ? "{$editUrl}#{$handle}" : null;
     }
 
     private function generateCreateUrl(EntryContract|TermContract|null $model, Authorizable $user): ?string
@@ -109,30 +82,18 @@ class ToolbarContextService
         return null;
     }
 
-    private function isToolbarOpened(): bool
-    {
-        return Arr::get($_COOKIE, 'super-admin-toolbar-opened', 'false') === 'true';
-    }
-
     private function getMultiSitesData(): ?array
     {
-        try {
-            $sites = SiteAPI::all();
+        $sites = SiteAPI::all();
 
-            if ($sites->count() <= 1) {
-                return null;
-            }
-
-            return $sites->map(fn(ConcreteSite $site) => [
-                'name' => $site->name(),
-                'url' => $site->absoluteUrl(),
-                'handle' => $site->handle(),
-            ])->sortBy('name')->values()->all();
-
-        } catch (Throwable $e) {
-            Log::error('ToolbarContextService: Error fetching multisite data.', ['exception' => $e]);
+        if ($sites->count() <= 1) {
             return null;
         }
-    }
 
+        return $sites->map(fn (Site $site) => [
+            'name' => $site->name(),
+            'url' => $site->absoluteUrl(),
+            'handle' => $site->handle(),
+        ])->sortBy('name')->values()->all();
+    }
 }

@@ -6,6 +6,11 @@
       "SuperInteractive\\SuperAdminToolbar\\": "src"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests"
+    }
+  },
   "require": {
     "php": "^8.3",
     "statamic/cms": "^6.0",
@@ -25,8 +30,13 @@
   },
   "config": {
     "allow-plugins": {
-      "pixelfear/composer-dist-plugin": true
+      "pixelfear/composer-dist-plugin": true,
+      "pestphp/pest-plugin": true
     }
   },
-  "license": "MIT"
+  "license": "MIT",
+  "require-dev": {
+    "orchestra/testbench": "^10.0",
+    "pestphp/pest": "^4.0"
+  }
 }

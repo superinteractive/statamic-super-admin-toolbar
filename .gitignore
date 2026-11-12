@@ -5,3 +5,5 @@ mix-manifest.json
 .vscode
 .idea
 .cymbal
+/.serena/
+/docs/superpowers/

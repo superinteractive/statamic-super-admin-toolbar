@@ -6,8 +6,7 @@ namespace SuperInteractive\SuperAdminToolbar\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\View;
+use Illuminate\Validation\Rule;
 use Statamic\Facades\Entry;
 use Statamic\Facades\Site;
 use Statamic\Facades\Term;
@@ -15,7 +14,6 @@ use Statamic\Http\Controllers\Controller;
 use SuperInteractive\SuperAdminToolbar\Services\ManifestService;
 use SuperInteractive\SuperAdminToolbar\Services\ToolbarContextService;
 use SuperInteractive\SuperAdminToolbar\Helpers\ToolbarHelpers;
-use Throwable;
 
 final class SuperAdminToolbarController extends Controller
 {
@@ -27,79 +25,31 @@ final class SuperAdminToolbarController extends Controller
             return response()->json(['authenticated' => false]);
         }
 
-        $siteHandle = $request->input('siteHandle', '');
-        $pageType = $request->input('pageType', '');
-        $currentPath = $request->input('currentPath', '');
+        $validated = $request->validate([
+            'siteHandle' => ['required', 'string', Rule::in(Site::all()->keys())],
+            'pageType' => ['required', Rule::in(['generic', 'entry', 'term'])],
+            'currentPath' => ['required', 'string'],
+            'entry' => ['nullable', 'string'],
+            'term' => ['nullable', 'string'],
+        ]);
 
-        if (empty($siteHandle)) {
-            Log::warning('SuperAdminToolbar: Invalid or missing site handle.', ['siteHandle' => $siteHandle]);
+        $site = Site::get($validated['siteHandle']);
+        $id = $validated[$validated['pageType']] ?? null;
 
-            return response()->json(['error' => 'Invalid or missing site handle.'], 400);
-        }
+        // A missing or deleted entry or term falls back to the generic toolbar.
+        $model = match (true) {
+            $id === null => null,
+            $validated['pageType'] === 'entry' => Entry::find($id),
+            default => Term::find($id)?->in($site->handle()),
+        };
 
-        if (empty($pageType)) {
-            Log::warning('SuperAdminToolbar: Invalid or missing page type.', ['pageType' => $pageType]);
+        $context = $contextService->buildContextData($site, $model);
+        $context['currentPath'] = $validated['currentPath'];
 
-            return response()->json(['error' => 'Invalid or missing page type.'], 400);
-        }
-
-        $site = Site::get($siteHandle);
-
-        // Initialize $model with null as default
-        $model = null;
-
-        if ($pageType === 'entry') {
-            $model = Entry::findOrFail($request->input('entry', null));
-        }
-
-        if ($pageType === 'term') {
-            $model = Term::findOrFail($request->input('term', null));
-        }
-
-        $payload = $this->buildPayload($site, $model, $currentPath);
-
-        return $payload
-            ? response()->json($payload)
-            : response()->json(['error' => 'Toolbar processing error.'], 500);
-    }
-
-
-    private function buildPayload($site, $model, $currentPath): ?array
-    {
-        $manifestService = new ManifestService();
-
-        $assets = $manifestService->getJsAndCssUrls();
-
-        $html = $this->renderHtml($site, $model, $currentPath);
-
-        if ($html === null) {
-            return null;
-        }
-
-        return [
-            'html' => $html,
-            'css' => $assets['css'],
-            'js' => $assets['js'],
+        return response()->json([
+            'html' => view('super-admin-toolbar::toolbar', $context)->render(),
+            ...$manifestService->getJsAndCssUrls(),
             'authenticated' => true,
-        ];
-    }
-
-    private function renderHtml($site, $model, $currentPath): ?string
-    {
-        $contextService = app(ToolbarContextService::class);
-
-        try {
-            $context = $contextService->buildContextData($site, $model);
-            $context['currentPath'] = $currentPath;
-
-            return View::make('super-admin-toolbar::toolbar', $context)->render();
-        } catch (Throwable $e) {
-            Log::error('SuperAdminToolbar: View rendering failed.', [
-                'view' => 'super-admin-toolbar::toolbar',
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
+        ]);
     }
 }
